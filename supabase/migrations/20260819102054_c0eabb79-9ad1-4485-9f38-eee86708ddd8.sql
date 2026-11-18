@@ -1,0 +1,1 @@
+UPDATE public.settings SET line_add_friend_url = 'https://lin.ee/ooAAqpe' WHERE id = 1;

@@ -1,0 +1,1 @@
+UPDATE public.line_oa_settings SET liff_id = '2010762305-5Yqzh5tB', liff_endpoint_url = 'https://www.filmyynatta.com/l/shop', updated_at = now() WHERE id = '6eb12be4-dec4-4de4-9a83-b196c1c77e06';

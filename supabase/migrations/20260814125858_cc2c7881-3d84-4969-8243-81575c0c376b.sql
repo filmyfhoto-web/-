@@ -1,0 +1,13 @@
+GRANT SELECT ON public.myshop_integrations TO authenticated;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.myshop_product_mappings TO authenticated;
+GRANT SELECT ON public.myshop_sync_logs TO authenticated;
+GRANT SELECT ON public.myshop_orders TO authenticated;
+GRANT SELECT ON public.stock_sync_outbox TO authenticated;
+GRANT SELECT ON public.stock_sync_worker_runs TO authenticated;
+GRANT ALL ON public.myshop_integrations TO service_role;
+GRANT ALL ON public.myshop_product_mappings TO service_role;
+GRANT ALL ON public.myshop_sync_logs TO service_role;
+GRANT ALL ON public.myshop_orders TO service_role;
+GRANT ALL ON public.myshop_webhook_events TO service_role;
+GRANT ALL ON public.stock_sync_outbox TO service_role;
+GRANT ALL ON public.stock_sync_worker_runs TO service_role;

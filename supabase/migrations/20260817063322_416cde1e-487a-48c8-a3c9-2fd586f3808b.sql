@@ -1,0 +1,1 @@
+ALTER TABLE public.myshop_integrations ADD COLUMN IF NOT EXISTS category_presets jsonb NOT NULL DEFAULT '[]'::jsonb;

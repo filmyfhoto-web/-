@@ -1,0 +1,1 @@
+ALTER TABLE public.rds_documents ADD COLUMN IF NOT EXISTS project_name TEXT;

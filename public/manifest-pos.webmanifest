@@ -1,0 +1,19 @@
+{
+  "id": "/?app=pos",
+  "name": "POS หน้าร้าน — ร้านนัฐภรณ์",
+  "short_name": "POS หน้าร้าน",
+  "description": "แอปขายหน้าร้านแบบจอสัมผัส: สแกนบาร์โค้ด รับชำระเงิน ทอนเงิน และพิมพ์ใบเสร็จ",
+  "start_url": "/launch?app=pos",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "landscape",
+  "background_color": "#0b1220",
+  "theme_color": "#ea580c",
+  "lang": "th",
+  "icons": [
+    { "src": "/icons/pos-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/pos-192.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
+    { "src": "/icons/pos-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/pos-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

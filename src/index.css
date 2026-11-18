@@ -1,0 +1,1735 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Prevent rubber-band / overscroll bounce on mobile so the app feels native. */
+html, body {
+  overscroll-behavior-y: none;
+  overscroll-behavior-x: none;
+}
+
+/* Scroll stability: no sideways drift, no layout jump when scrollbars or
+   async content appear, and keep the reading position anchored. */
+html {
+  scrollbar-gutter: stable;
+  -webkit-text-size-adjust: 100%;
+}
+body {
+  overflow-x: hidden;
+  overflow-anchor: auto;
+  min-height: 100svh;
+}
+/* Async blocks (lists, cards, images) must not push the viewport around. */
+main, [data-scroll-stable] { overflow-anchor: auto; }
+
+/* Reserve space before media loads so lazy images can never shift the page. */
+img[loading="lazy"] { content-visibility: auto; }
+
+/* ---------------------------------------------------------------
+   Smooth, stable scrolling on every device.
+   Momentum scrolling inside panes, no chained page scroll, and
+   GPU-friendly compositing so long lists do not stutter on phones.
+   --------------------------------------------------------------- */
+@media screen {
+  .overflow-y-auto, .overflow-auto, .overflow-x-auto,
+  [data-scroll-area], [data-table-scroll] {
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+    scrollbar-width: thin;
+  }
+  /* Pinned table headers get their own layer so scrolling stays smooth. */
+  [data-table-scroll][data-table-sticky] > table > thead th { will-change: transform; }
+  /* Media and embedded previews always fit their container. */
+  img, svg, video, canvas, iframe { max-width: 100%; }
+  /* Flex/grid children may shrink instead of forcing the page sideways. */
+  main > *, [data-fit] { min-width: 0; }
+  /* Long unbroken IDs / URLs wrap instead of widening the layout. */
+  [data-table-scroll] > table td, [data-table-scroll] > table th { overflow-wrap: anywhere; }
+}
+
+/* Fonts are swapped in without a visible reflow of the reading position. */
+@media (prefers-reduced-motion: no-preference) {
+  html { scroll-behavior: auto; }
+}
+
+/* =============================================================
+   Purchase Order (ใบสั่งสินค้า) — dedicated A4 print styles.
+   Scoped to #po-print-root so it never touches the receipts docs.
+   ============================================================= */
+.po-sheet {
+  width: 210mm;
+  min-height: 297mm;
+  background: #fff;
+  color: #111;
+  font-family: "Sarabun", "Noto Sans Thai", system-ui, sans-serif;
+  box-shadow: 0 10px 30px -12px rgba(0,0,0,0.18);
+  padding: 14mm 12mm;
+  margin: 0 auto;
+  box-sizing: border-box;
+}
+.po-input-line {
+  background: transparent;
+  border: none;
+  border-bottom: 1px dotted #9ca3af;
+  outline: none;
+  width: 100%;
+  padding: 2px 4px;
+  font: inherit;
+  color: inherit;
+}
+.po-input-line:focus { border-bottom-color: #ea580c; background: #fff7ed; }
+.po-textarea-line {
+  background: transparent;
+  border: 1px dashed #d1d5db;
+  outline: none;
+  width: 100%;
+  padding: 4px 6px;
+  font: inherit;
+  color: inherit;
+  resize: vertical;
+  min-height: 40px;
+}
+.po-textarea-line:focus { border-color: #ea580c; background: #fff7ed; }
+.po-items {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 11pt;
+}
+.po-items th, .po-items td {
+  border: 1px solid #d4d4d8;
+  padding: 4px 6px;
+  vertical-align: top;
+}
+.po-items th {
+  background: #fff7ed;
+  color: #9a3412;
+  font-weight: 700;
+  text-align: center;
+}
+.po-notice {
+  background: #fff7ed;
+  border: 1px solid #fed7aa;
+  border-left: 4px solid #ea580c;
+  padding: 10px 14px;
+  color: #7c2d12;
+  border-radius: 2px;
+}
+.po-preview-mode .po-input-line,
+.po-preview-mode .po-textarea-line { border-color: transparent; }
+
+/* True multi-page A4 preview host — shown ONLY when previewMode is on.
+   Each generated page is a self-contained white A4 sheet with soft shadow
+   and spacing between pages. Contains no toolbar or actions. */
+.po-preview-host {
+  display: block;
+}
+.po-preview-host .po-preview-pages {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+}
+.po-preview-host .po-pdf-page {
+  box-shadow: 0 10px 30px -12px rgba(0,0,0,0.18);
+  background: #fff;
+}
+
+/* Offscreen source in preview mode: keep in DOM (so the paginator can
+   clone + measure), but move out of the visible flow. Print mode below
+   re-anchors and reveals it. */
+.po-source-hidden {
+  position: absolute !important;
+  left: -99999px !important;
+  top: 0 !important;
+  height: auto !important;
+  pointer-events: none;
+  opacity: 0;
+}
+
+/* Deterministic single-row compaction fallback used by poPdf.ts when a
+   product row is so tall it wouldn't fit on a fresh A4 page. */
+.po-items tr.po-compact-row td,
+.po-items tr.po-compact-row textarea,
+.po-items tr.po-compact-row [data-po-value="true"] {
+  padding: 2px 4px !important;
+  font-size: 9.5pt !important;
+  line-height: 1.15 !important;
+}
+.po-items tr.po-compact-row-xs td,
+.po-items tr.po-compact-row-xs textarea,
+.po-items tr.po-compact-row-xs [data-po-value="true"] {
+  padding: 1px 3px !important;
+  font-size: 8.5pt !important;
+  line-height: 1.05 !important;
+}
+
+/* Deterministic compaction for oversized tail blocks (totals /
+   notes+signature). Reduces spacing + font ONLY to a readable minimum. */
+.po-compact-block {
+  font-size: 9.5pt !important;
+  line-height: 1.2 !important;
+}
+.po-compact-block * {
+  font-size: inherit !important;
+  line-height: inherit !important;
+}
+.po-compact-block > * {
+  margin-top: 2px !important;
+  margin-bottom: 2px !important;
+  padding-top: 2px !important;
+  padding-bottom: 2px !important;
+}
+
+/* Extra-compact fallback — one more readable step down before we refuse
+   to render (PoBlockTooTallError) rather than silently cropping. */
+.po-compact-block-xs {
+  font-size: 8.5pt !important;
+  line-height: 1.1 !important;
+}
+.po-compact-block-xs * {
+  font-size: inherit !important;
+  line-height: inherit !important;
+}
+.po-compact-block-xs > * {
+  margin-top: 1px !important;
+  margin-bottom: 1px !important;
+  padding-top: 1px !important;
+  padding-bottom: 1px !important;
+  gap: 4px !important;
+}
+
+/* Auto-grow multiline controls must never clip their content on screen or
+   in print. Height is set imperatively; keep vertical overflow visible. */
+.po-textarea-line {
+  overflow: hidden;
+}
+
+/* On-screen responsive preview: wrapper reserves the scaled height (set
+   inline by React) so the surrounding page reflows correctly. The sheet
+   itself is transformed via inline style computed from a ResizeObserver. */
+.po-sheet-wrap {
+  width: 100%;
+  overflow: visible;
+}
+
+@media print {
+  @page { size: A4 portrait; margin: 12mm; }
+  html, body { background: #fff !important; }
+  body.po-printing { overflow: visible !important; }
+  body.po-printing > * { visibility: hidden !important; }
+  body.po-printing #po-print-root,
+  body.po-printing #po-print-root * { visibility: visible !important; }
+  body.po-printing #po-print-root {
+    position: absolute !important;
+    left: 0 !important;
+    top: 0 !important;
+    width: 100% !important;
+    transform: none !important;
+  }
+  body.po-printing .po-sheet-wrap { height: auto !important; }
+  /* If user prints while in preview mode, undo the offscreen hide so the
+     document sheet prints at page origin. */
+  body.po-printing .po-source-hidden {
+    position: absolute !important;
+    left: 0 !important;
+    top: 0 !important;
+    opacity: 1 !important;
+  }
+  /* Never print the on-screen preview host — the browser's own print
+     pipeline paginates #po-print-root from source. */
+  body.po-printing .po-preview-host { display: none !important; }
+  body.po-printing .po-no-print,
+  .po-no-print { display: none !important; }
+  .po-sheet {
+    box-shadow: none !important;
+    padding: 0 !important;
+    width: 100% !important;
+    min-height: 0 !important;
+    transform: none !important;
+  }
+  .po-items { page-break-inside: auto; }
+  .po-items thead { display: table-header-group; }
+  .po-items tfoot { display: table-footer-group; }
+  .po-items tr { page-break-inside: avoid !important; break-inside: avoid !important; }
+  .po-block-keep { page-break-inside: avoid !important; break-inside: avoid !important; }
+  .po-input-line, .po-textarea-line {
+    border-color: transparent !important;
+    background: transparent !important;
+  }
+}
+body {
+  touch-action: pan-y;
+}
+
+  @layer base {
+  :root {
+    /* ── NATTA GROUP shared dashboard tokens ─────────────────────────────── */
+    --ng-ink: 209 61% 16%;
+    --ng-muted: 209 18% 42%;
+    --ng-soft: 209 18% 54%;
+    --ng-body: 209 45% 26%;
+    --ng-line: 205 30% 87%;
+    --ng-line-soft: 204 42% 95%;
+    --ng-divider: 205 30% 91%;
+    --ng-tint: 45 29% 97%;
+    --ng-tint-hover: 204 42% 95%;
+    --ng-card-hover: 204 42% 97%;
+    /* Legacy names remain as compatibility aliases for existing screens. */
+    --ng-purple: 209 61% 16%;
+    --ng-purple-deep: 209 61% 16%;
+    --ng-purple-soft: 210 53% 51%;
+    --ng-purple-tint: 204 42% 95%;
+    --ng-purple-tint2: 34 50% 81%;
+    --ng-lavender: 205 30% 87%;
+    --ng-blue: 210 53% 51%;
+    --ng-blue-tint: 204 42% 95%;
+    --ng-orange: 24 92% 48%;
+    --ng-orange-deep: 20 90% 34%;
+    --ng-orange-tint: 30 90% 95%;
+    --ng-green: 152 58% 33%;
+    --ng-green-deep: 152 58% 28%;
+    --ng-green-tint: 152 55% 92%;
+    --ng-pink: 210 53% 51%;
+    --ng-pink-tint: 204 42% 95%;
+    --ng-chip: 205 30% 91%;
+    --ng-shadow-card: 0 2px 8px -6px hsl(209 61% 16% / 0.22);
+    --ng-radius-card: 10px;
+    --ng-radius-tile: 10px;
+    --ng-radius-chip: 8px;
+    /* ความกว้างมาตรฐานของกรอบเนื้อหา (ใช้ร่วมทุกหน้า) */
+    --ng-page-max: 72rem;
+    --ng-page-max-wide: 96rem;
+
+    --ng-hero-gradient: linear-gradient(105deg, hsl(var(--nt-navy)) 0%, hsl(var(--nt-blue)) 100%);
+
+    /* ร้านนัฐภรณ์ — POSPOS-inspired Sky × White palette (2026-07) */
+    /* พื้นหลังขาวเทาอ่อน สบายตา อ่านง่าย โทน sky blue สำหรับ CTA */
+    --background: 210 33% 97%;
+    --foreground: 217 33% 17%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 217 33% 17%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 217 33% 17%;
+
+    /* Shared functional group colors: orange, green, navy, blue. */
+    --group-colorlab: 24 92% 48%;
+    --group-colorlab-foreground: 0 0% 100%;
+    --group-printing: 152 58% 33%;
+    --group-printing-foreground: 0 0% 100%;
+    --group-filmshop: 209 61% 16%;
+    --group-filmshop-foreground: 0 0% 100%;
+    --docbot: 175 77% 26%;
+    --docbot-foreground: 0 0% 100%;
+    --group-queue: 210 53% 51%;
+    --group-queue-foreground: 0 0% 100%;
+
+    --primary: 210 92% 48%;
+    --primary-foreground: 0 0% 100%;
+    --primary-glow: 205 92% 60%;
+
+    /* NATTA GROUP public brand aliases — one shared professional palette. */
+    --brand: 210 53% 51%;
+    --brand-deep: 209 61% 16%;
+    --brand-bright: 210 53% 51%;
+    --brand-lavender: 204 42% 95%;
+    --brand-ink: 209 61% 16%;
+    --brand-foreground: 0 0% 100%;
+    --gradient-brand: linear-gradient(135deg, hsl(var(--nt-navy)), hsl(var(--nt-blue)));
+    --shadow-brand: 0 14px 34px -22px hsl(var(--nt-navy) / 0.32);
+
+    /* ---- Portal design language (หน้าแรกลูกค้า + แดชบอร์ดแอดมิน) ----
+       การ์ดขอบมน พื้นขาว เส้นขอบบาง เงานุ่ม บนพื้นเทาอ่อน */
+    --portal-canvas: 210 40% 98%;
+    --portal-card: 0 0% 100%;
+    --portal-line: 214 32% 91%;
+    --portal-muted: 215 16% 47%;
+    --portal-radius: 24px;
+    --portal-radius-sm: 16px;
+
+    /* ---- NATTA GROUP landing mockup (route "/landing") ----
+       กรมท่า / ขาวอมครีม / ฟ้าเทาอ่อน / ฟ้าน้ำเงิน / เบจอุ่น */
+    --nt-navy: 209 61% 16%;        /* #102A43 */
+    --nt-navy-soft: 209 45% 26%;
+    --nt-cream: 45 29% 97%;        /* #FAF9F6 */
+    --nt-mist: 204 42% 95%;        /* #EEF4F8 */
+    --nt-blue: 210 53% 51%;        /* #3F82C4 */
+    --nt-blue-deep: 210 55% 40%;
+    --nt-beige: 34 50% 81%;        /* #E7D2B7 */
+    --nt-line: 205 30% 87%;
+    --nt-muted: 209 18% 42%;
+    --nt-shadow: 0 14px 34px -22px hsl(209 61% 16% / 0.45);
+    --shadow-portal: 0 1px 2px hsl(215 25% 27% / 0.06);
+    --shadow-portal-hover: 0 24px 48px -24px hsl(215 40% 27% / 0.28);
+
+
+    /* Cool grey secondary */
+    --secondary: 210 30% 94%;
+    --secondary-foreground: 217 40% 25%;
+
+    --muted: 210 25% 95%;
+    --muted-foreground: 215 15% 45%;
+
+    --accent: 205 90% 94%;
+    --accent-foreground: 210 90% 28%;
+
+    --destructive: 0 78% 52%;
+    --destructive-foreground: 0 0% 100%;
+
+    --success: 152 55% 38%;
+    --warning: 35 90% 50%;
+    --info: 218 60% 45%;
+
+    --border: 214 30% 89%;
+    --input: 214 30% 91%;
+    --ring: 210 92% 48%;
+
+    --radius: 6px;
+
+    --gradient-primary: linear-gradient(135deg, hsl(210 92% 48%) 0%, hsl(205 92% 60%) 100%);
+    --gradient-soft: linear-gradient(180deg, hsl(210 33% 98%), hsl(210 40% 95%));
+    --gradient-card: linear-gradient(135deg, hsl(0 0% 100%) 0%, hsl(210 40% 98%) 100%);
+    /* Account hero: sky blue -> royal blue -> navy (easy on the eyes). */
+    --gradient-account: linear-gradient(155deg, hsl(203 95% 66%) 0%, hsl(212 88% 48%) 48%, hsl(219 62% 24%) 100%);
+    --gradient-account-page: linear-gradient(180deg, hsl(205 70% 96%) 0%, hsl(210 45% 97%) 42%, hsl(0 0% 100%) 100%);
+    --shadow-soft: 0 4px 20px -8px hsl(217 40% 25% / 0.10);
+    --shadow-card: 0 2px 8px -2px hsl(217 40% 25% / 0.07);
+    --shadow-glow: 0 10px 30px -12px hsl(210 92% 48% / 0.28);
+
+    /* Navy sidebar, white text (system-wide staff/admin shell). */
+    --sidebar-background: 218 45% 18%;
+    --sidebar-foreground: 0 0% 100%;
+    --sidebar-primary: 210 90% 60%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 218 40% 28%;
+    --sidebar-accent-foreground: 0 0% 100%;
+    --sidebar-border: 218 40% 26%;
+    --sidebar-ring: 210 90% 60%;
+
+    --customer-nav-bg: 218 60% 22%;
+    --customer-nav-border: 218 68% 16%;
+    --customer-nav-fg: 0 0% 100%;
+    --customer-nav-hover: 218 58% 28%;
+  }
+
+   /* ---------- Document-type tints (screen only) ---------- */
+   :root {
+     --doc-tint-quotation:      204 42% 95%;
+     --doc-tint-quotation-dot:  210 53% 51%;
+     --doc-tint-receipt:        152 55% 92%;
+     --doc-tint-receipt-dot:    152 58% 33%;
+     --doc-tint-delivery:       204 42% 95%;
+     --doc-tint-delivery-dot:   210 53% 51%;
+     --doc-tint-tax_invoice:    35 92% 90%;
+     --doc-tint-tax_invoice-dot: 30 90% 50%;
+   }
+
+  /* ---------- Per-store theme overrides (D) ----------
+     Scoped by data-store attribute on ReceiptsLayout root. Overrides colors
+     only — does NOT touch #doc-print, so printed docs keep original colors. */
+
+  /* ---------- นัฐภรณ์ เชียงกลาง storefront theme (customer-facing only) ----------
+     Brand mix: plum 50% · navy 20% · cream white 20% · champagne 10%.
+     Scoped by [data-shopfront="nattapron"] on the CustomerLayout root so
+     admin / POS / documents keep their own palettes. */
+  [data-shopfront="nattapron"] {
+    --background: 210 18% 96%;
+    /* Realistic multi-hue icon palette for the service shortcut grid.
+       Kept as tokens so admins/theming can retune without touching JSX. */
+    --svc-1: 210 90% 48%;
+    --svc-2: 152 62% 38%;
+    --svc-3: 24 92% 52%;
+    --svc-4: 340 74% 52%;
+    --svc-5: 268 66% 55%;
+    --svc-6: 42 92% 48%;
+    --svc-7: 190 78% 42%;
+    --svc-8: 12 78% 50%;
+    --svc-9: 96 52% 40%;
+    --svc-10: 228 72% 56%;
+    /* Height reserved for the mobile bottom nav so the floating cart never
+       overlaps it. Overridden to 0 from md up where the nav is hidden. */
+    --shop-nav-h: 4.5rem;
+    --shop-gradient-strength: 0.5;
+    --foreground: 208 52% 14%;
+    --card: 0 0% 100%;
+    --card-foreground: 208 52% 14%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 208 52% 14%;
+    --primary: 208 53% 19%;
+    --primary-foreground: 0 0% 100%;
+    --primary-glow: 205 49% 28%;
+    --secondary: 205 30% 94%;
+    --secondary-foreground: 208 53% 19%;
+    --muted: 210 20% 94%;
+    --muted-foreground: 210 12% 40%;
+    --accent: 205 40% 93%;
+    --accent-foreground: 208 53% 19%;
+    --border: 208 18% 87%;
+    --input: 208 18% 89%;
+    --ring: 208 53% 19%;
+    --radius: 14px;
+    /* Champagne gold — accents only (badges, highlights, rush tags). */
+    --champagne: 40 64% 62%;
+    --champagne-foreground: 30 48% 16%;
+    /* Navy — secondary structural tone. */
+    --navy: 205 49% 28%;
+    --navy-foreground: 0 0% 100%;
+    --gradient-primary: linear-gradient(135deg, hsl(208 53% 19%) 0%, hsl(205 49% 28%) 100%);
+    --gradient-soft: linear-gradient(180deg, hsl(210 20% 98%), hsl(208 22% 94%));
+    --gradient-account: linear-gradient(155deg, hsl(203 80% 62%) 0%, hsl(210 66% 38%) 46%, hsl(208 53% 19%) 100%);
+    --gradient-account-page: linear-gradient(180deg, hsl(205 55% 96%) 0%, hsl(208 30% 97%) 42%, hsl(0 0% 100%) 100%);
+    --shadow-card: 0 2px 12px -6px hsl(208 45% 16% / 0.16);
+    --shadow-soft: 0 8px 26px -14px hsl(208 45% 16% / 0.26);
+    /* ตัวคูณขนาดตัวอักษรที่แอดมินตั้งได้ (ค่าเริ่มต้น 1) */
+    --app-font-scale: 1;
+    font-size: calc(1rem * var(--app-font-scale, 1));
+  }
+
+  /* ---------- Fluid Thai typography (320px → desktop) ----------
+     ใช้ clamp() เพื่อให้ข้อความไทยไม่ล้นและไม่ทับไอคอนในจอเล็ก */
+  [data-shopfront="nattapron"] .text-fluid-xs {
+    font-size: clamp(0.6875rem, 0.66rem + 0.15vw, 0.8125rem);
+    line-height: 1.45;
+  }
+  [data-shopfront="nattapron"] .text-fluid-sm {
+    font-size: clamp(0.8125rem, 0.78rem + 0.2vw, 0.9375rem);
+    line-height: 1.5;
+  }
+  [data-shopfront="nattapron"] .text-fluid-base {
+    font-size: clamp(0.9375rem, 0.9rem + 0.25vw, 1.0625rem);
+    line-height: 1.55;
+  }
+  [data-shopfront="nattapron"] .text-fluid-lg {
+    font-size: clamp(1.0625rem, 0.98rem + 0.5vw, 1.375rem);
+    line-height: 1.35;
+  }
+  [data-shopfront="nattapron"] .text-fluid-xl {
+    font-size: clamp(1.25rem, 1.1rem + 0.8vw, 1.625rem);
+    line-height: 1.3;
+  }
+  /* ข้อความไทยยาว ๆ ต้องตัดคำได้ ไม่ดันเลย์เอาต์ */
+  [data-shopfront="nattapron"] h1,
+  [data-shopfront="nattapron"] h2,
+  [data-shopfront="nattapron"] h3,
+  [data-shopfront="nattapron"] p,
+  [data-shopfront="nattapron"] span,
+  [data-shopfront="nattapron"] a {
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+
+  /* The mobile bottom nav disappears from md up, so reclaim the reserved
+     space and let the floating cart sit flush against the safe area. */
+  @media (min-width: 768px) {
+    [data-shopfront="nattapron"] {
+      --shop-nav-h: 1rem;
+    }
+  }
+
+  [data-store="colorlab"] {
+    --primary: 20 95% 44%;
+    --primary-foreground: 0 0% 100%;
+    --primary-glow: 24 92% 56%;
+    --secondary: 30 90% 95%;
+    --secondary-foreground: 20 90% 24%;
+    --accent: 30 85% 92%;
+    --accent-foreground: 20 90% 22%;
+    --ring: 20 95% 44%;
+    --sidebar-primary: 20 95% 44%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 30 85% 92%;
+    --sidebar-accent-foreground: 20 90% 22%;
+    --sidebar-ring: 20 95% 44%;
+    --gradient-primary: linear-gradient(135deg, hsl(20 95% 44%) 0%, hsl(24 92% 56%) 100%);
+    --gradient-soft: linear-gradient(180deg, hsl(30 90% 97%), hsl(30 85% 93%));
+    --border: 28 45% 82%;
+    --input: 28 45% 86%;
+    --table-stripe: 30 90% 97%;
+    --table-header-bg: 20 95% 44%;
+    --table-header-fg: 0 0% 100%;
+    --section-header-bg: 20 95% 44%;
+    --section-header-fg: 0 0% 100%;
+  }
+  [data-store="printing"] {
+    --primary: 184 92% 22%;
+    --primary-foreground: 0 0% 100%;
+    --primary-glow: 180 70% 36%;
+    --secondary: 178 45% 94%;
+    --secondary-foreground: 184 92% 16%;
+    --accent: 175 50% 90%;
+    --accent-foreground: 184 92% 16%;
+    --ring: 184 92% 22%;
+    --sidebar-primary: 184 92% 22%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 175 50% 90%;
+    --sidebar-accent-foreground: 184 92% 16%;
+    --sidebar-ring: 184 92% 22%;
+    --gradient-primary: linear-gradient(135deg, hsl(184 92% 22%) 0%, hsl(180 70% 36%) 100%);
+    --gradient-soft: linear-gradient(180deg, hsl(178 45% 96%), hsl(175 50% 92%));
+    --border: 178 30% 82%;
+    --input: 178 30% 86%;
+    --table-stripe: 178 45% 96%;
+    --table-header-bg: 184 92% 22%;
+    --table-header-fg: 0 0% 100%;
+    --section-header-bg: 184 92% 22%;
+    --section-header-fg: 0 0% 100%;
+  }
+  /* Compact corners inside the receipts app — matches reference images. */
+  [data-store] .rounded-lg,
+  [data-store] .rounded-xl,
+  [data-store] .rounded-2xl { border-radius: 6px !important; }
+  [data-store] .rounded-md   { border-radius: 4px !important; }
+  [data-store] input,
+  [data-store] textarea,
+  [data-store] select,
+  [data-store] [role="combobox"] { border-radius: 6px !important; }
+  [data-store] button:not(.rounded-full):not(.rounded-none) { border-radius: 6px !important; }
+  /* Never touch printed document radii */
+  [data-store] #doc-print,
+  [data-store] #doc-print * { border-radius: revert !important; }
+  /* Pastel striped tables outside printed docs */
+  [data-store] main table tbody tr:nth-child(even) {
+    background-color: hsl(var(--table-stripe, var(--muted)) / 0.55);
+  }
+  [data-store] main table thead th {
+    background-color: hsl(var(--table-header-bg, var(--primary)));
+    color: hsl(var(--table-header-fg, var(--primary-foreground)));
+    font-weight: 600;
+  }
+  /* Section header strip (dashboard headings) */
+  [data-store] .section-header-strip {
+    background-color: hsl(var(--section-header-bg, var(--primary)));
+    color: hsl(var(--section-header-fg, var(--primary-foreground)));
+  }
+
+  html, body {
+    font-family: 'Noto Sans Thai', 'Sarabun', system-ui, sans-serif;
+  }
+
+  * { @apply border-border; }
+  body { @apply bg-background text-foreground; }
+}
+
+@layer components {
+  .bg-gradient-primary { background: var(--gradient-primary); }
+  .bg-gradient-soft { background: var(--gradient-soft); }
+  .bg-gradient-card { background: var(--gradient-card); }
+  .bg-gradient-account { background: var(--gradient-account); }
+  .bg-gradient-account-page { background: var(--gradient-account-page); }
+  .shadow-soft { box-shadow: var(--shadow-soft); }
+  .shadow-card { box-shadow: var(--shadow-card); }
+  .shadow-glow { box-shadow: var(--shadow-glow); }
+  .text-gradient {
+    background: var(--gradient-primary);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  /* Zebra rows: white + blush pastel — use on tables outside printed docs. */
+  .stripe-blush tbody tr:nth-child(even) {
+    background-color: hsl(352 70% 97%);
+  }
+  /* Compact global radius across the customer app */
+  .rounded-lg, .rounded-xl, .rounded-2xl { border-radius: 6px; }
+  /* Printed documents keep original template palette — never inherit blush */
+  #doc-print, #doc-print * {
+    color-scheme: light;
+  }
+  .customer-navy-action {
+    display: inline-flex;
+    min-height: 2.75rem;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    border-radius: 6px;
+    border: 2px solid hsl(var(--customer-nav-border)) !important;
+    background: hsl(var(--customer-nav-bg)) !important;
+    color: hsl(var(--customer-nav-fg)) !important;
+    padding: 0.5rem 0.875rem;
+    font-weight: 700;
+    line-height: 1.2;
+    box-shadow: var(--shadow-soft);
+    transition: background-color 160ms ease, border-color 160ms ease, transform 160ms ease;
+  }
+  .customer-navy-action:hover {
+    background: hsl(var(--customer-nav-hover)) !important;
+    color: hsl(var(--customer-nav-fg)) !important;
+  }
+  .customer-navy-action:focus-visible,
+  .customer-breadcrumb-link:focus-visible {
+    outline: 2px solid hsl(var(--ring));
+    outline-offset: 3px;
+  }
+  .customer-navy-action:disabled,
+  .customer-navy-action[aria-disabled="true"] {
+    opacity: 0.6;
+    pointer-events: none;
+  }
+  .customer-breadcrumb-link,
+  .customer-breadcrumb-current {
+    display: inline-flex;
+    min-height: 2.5rem;
+    align-items: center;
+    gap: 0.375rem;
+    border-radius: 6px;
+    border: 2px solid hsl(var(--customer-nav-border));
+    padding: 0.45rem 0.75rem;
+    font-weight: 700;
+    line-height: 1.2;
+  }
+  .customer-breadcrumb-link {
+    background: hsl(var(--customer-nav-bg));
+    color: hsl(var(--customer-nav-fg));
+  }
+  .customer-breadcrumb-link:hover {
+    background: hsl(var(--customer-nav-hover));
+    color: hsl(var(--customer-nav-fg));
+  }
+  .customer-breadcrumb-current {
+    background: hsl(var(--customer-nav-bg));
+    color: hsl(var(--customer-nav-fg));
+    box-shadow: inset 0 0 0 1px hsl(var(--customer-nav-fg) / 0.18);
+  }
+  /* Admin and dashboard surfaces use solid navy/blue states, never AI gradients. */
+  .admin-sidebar {
+    background: hsl(var(--sidebar-background));
+    border-right: 1px solid hsl(0 0% 100% / 0.12);
+    color: hsl(var(--sidebar-foreground));
+  }
+  .admin-nav-item { color: hsl(var(--foreground)); opacity: 1; }
+  .admin-nav-item:hover,
+  .admin-nav-item:focus-visible { background: hsl(var(--accent)); color: hsl(var(--accent-foreground)); }
+  .admin-nav-item-active { background: hsl(var(--primary)); color: hsl(var(--primary-foreground)); font-weight: 700; }
+  .admin-nav-group-title { color: hsl(var(--muted-foreground)); }
+  .admin-sidebar .admin-nav-item { color: hsl(0 0% 100% / 0.78); }
+  .admin-sidebar .admin-nav-item:hover,
+  .admin-sidebar .admin-nav-item:focus-visible { background: hsl(0 0% 100% / 0.08); color: hsl(0 0% 100%); }
+  .admin-sidebar .admin-nav-item-active { background: hsl(var(--primary)); color: hsl(var(--primary-foreground)); box-shadow: 0 6px 16px -8px hsl(var(--primary) / 0.6); font-weight: 700; }
+  .admin-sidebar .admin-nav-group-title { color: hsl(0 0% 100% / 0.55); }
+  .ng-card { background: hsl(var(--card)); border: 1px solid hsl(var(--border)); border-radius: 0.75rem; box-shadow: var(--ng-shadow-card); }
+  .ng-toolbar { background: hsl(var(--card)); border: 1px solid hsl(var(--border)); border-radius: 0.625rem; box-shadow: var(--ng-shadow-card); }
+  .ng-thead { background: hsl(var(--muted)); color: hsl(var(--muted-foreground)); }
+  .ng-btn-brand { background: hsl(var(--primary)); color: hsl(var(--primary-foreground)); }
+  .ng-btn-brand:hover { background: hsl(var(--nt-blue-deep)); }
+  .ng-canvas { background: hsl(var(--nt-cream)); }
+  .ng-hero { background: hsl(var(--nt-navy)); color: hsl(0 0% 100%); border-radius: 0.875rem; box-shadow: var(--shadow-portal); }
+  .ng-chip { display: inline-flex; align-items: center; gap: 0.25rem; border-radius: 9999px; border: 1px solid hsl(var(--border)); background: hsl(var(--muted)); padding: 0.125rem 0.5rem; font-size: 11px; line-height: 1.25rem; color: hsl(var(--muted-foreground)); }
+  .ng-module { background: hsl(var(--card)); border: 1px solid hsl(var(--border)); border-radius: 0.875rem; box-shadow: var(--ng-shadow-card); transition: box-shadow 0.15s ease, transform 0.15s ease, border-color 0.15s ease; }
+  .ng-module:hover { box-shadow: var(--shadow-portal-hover); border-color: hsl(var(--primary) / 0.35); transform: translateY(-1px); }
+  /* กรอบเนื้อหามาตรฐานของทุกหน้า — ความกว้างและระยะห่างเท่ากันทั้งลูกค้า/แอดมิน
+     แก้ที่เดียวแล้วทุกหน้าปรับตาม (หน้าใหญ่จะไม่กว้างเกินหน้าเล็ก) */
+  .ng-page { width: 100%; min-width: 0; margin-inline: auto; max-width: var(--ng-page-max, 72rem); }
+  /* หน้าที่เป็นตาราง/กริดหนาแน่น (POS) ใช้กรอบกว้างพิเศษแต่ยังจัดกึ่งกลางเหมือนกัน */
+  .ng-page-wide { width: 100%; min-width: 0; margin-inline: auto; max-width: var(--ng-page-max-wide, 96rem); }
+}
+
+
+/* Per-document font scale: only TEXT shrinks/grows — page size, table widths,
+   and layout stay constant. Header is reset to 1 so logo/header stay fixed. */
+/* Base rule so ANY text inside the print area scales — covers cells/labels
+   that don't use an explicit Tailwind text-* class. Table column widths are
+   defined in mm/%, so layout stays put. */
+#doc-print { font-size: calc(14px * var(--doc-font-scale, 1)); }
+#doc-print .text-\[10px\] { font-size: calc(10px * var(--doc-font-scale, 1)) !important; }
+#doc-print .text-\[11px\] { font-size: calc(11px * var(--doc-font-scale, 1)) !important; }
+#doc-print .text-\[12px\] { font-size: calc(12px * var(--doc-font-scale, 1)) !important; }
+#doc-print .text-\[13px\] { font-size: calc(13px * var(--doc-font-scale, 1)) !important; }
+#doc-print .text-xs   { font-size: calc(0.75rem  * var(--doc-font-scale, 1)) !important; line-height: calc(1rem    * var(--doc-font-scale, 1)) !important; }
+#doc-print .text-sm   { font-size: calc(0.875rem * var(--doc-font-scale, 1)) !important; line-height: calc(1.25rem * var(--doc-font-scale, 1)) !important; }
+#doc-print .text-base { font-size: calc(1rem     * var(--doc-font-scale, 1)) !important; line-height: calc(1.5rem  * var(--doc-font-scale, 1)) !important; }
+#doc-print .text-lg   { font-size: calc(1.125rem * var(--doc-font-scale, 1)) !important; line-height: calc(1.75rem * var(--doc-font-scale, 1)) !important; }
+#doc-print .text-xl   { font-size: calc(1.25rem  * var(--doc-font-scale, 1)) !important; line-height: calc(1.75rem * var(--doc-font-scale, 1)) !important; }
+#doc-print .text-4xl  { font-size: calc(2.25rem  * var(--doc-font-scale, 1)) !important; line-height: calc(2.5rem  * var(--doc-font-scale, 1)) !important; }
+/* Header group stays at original size regardless of slider */
+#doc-print .doc-header-group { --doc-font-scale: 1; }
+
+/* .doc-page padding is set inline by DocumentPreview.tsx (10/10/17/10mm on
+   locked A4) so the header sits exactly 10mm from the paper edge and the
+   content region is fixed at 190×270mm. We only scale the items-table cell
+   padding by --doc-font-scale below. */
+#doc-print .doc-items-table th,
+#doc-print .doc-items-table td {
+  padding-top:    calc(0.25rem  * var(--doc-font-scale, 1)) !important;
+  padding-bottom: calc(0.25rem  * var(--doc-font-scale, 1)) !important;
+  padding-left:   calc(0.375rem * var(--doc-font-scale, 1)) !important;
+  padding-right:  calc(0.375rem * var(--doc-font-scale, 1)) !important;
+}
+
+/* Page numbers are intentionally hidden across every export path
+   (screen, print, PDF, PNG, JPG). Any legacy badge that slips in from
+   an older build must not render. */
+.bundle-page-num,
+.doc-page-number { display: none !important; }
+
+/* On-screen preview: clearly separate consecutive document pages so
+   users can see the page break at a glance. The per-page marginTop is
+   set inline by DocumentPreview using the layout's `page_gap_mm`; this
+   rule is the fallback for any consumer that renders pages without the
+   inline style. */
+#doc-print .doc-page + .doc-page { margin-top: 16mm; }
+#doc-print,
+[data-doc-print] {
+  --doc-page-width: 210mm;
+  --doc-page-height: 297mm;
+  --doc-page-padding: 10mm 10mm 17mm 10mm;
+}
+/* Bundle preview: clearly separate each document (main + companion + attachments). */
+#doc-print .doc-print-document + .doc-print-document { margin-top: 24mm; }
+/* No shadow on preview pages (user request). */
+#doc-print .doc-page { box-shadow: none !important; }
+/* Header sits flush at the top of the locked 10mm page padding. */
+#doc-print .doc-header-group { padding-top: 0; }
+
+/* Screen-only: show the paper boundary clearly and mark overflow pages in red. */
+#doc-print .doc-page {
+  outline: 1px dashed hsl(215 20% 78%);
+  outline-offset: -1px;
+}
+#doc-print .doc-page[data-overflow="true"] {
+  outline: 2px solid hsl(0 84% 55%);
+  box-shadow: inset 0 0 0 2px hsl(0 84% 55% / 0.18);
+}
+
+/* Screen-only page divider between preview pages. */
+.doc-page-divider {
+  margin: 6mm auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: hsl(215 15% 45%);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  border-top: 1px dashed hsl(215 20% 78%);
+  padding-top: 6px;
+}
+.doc-page-divider > span {
+  background: hsl(210 25% 96%);
+  padding: 2px 10px;
+  border-radius: 999px;
+  transform: translateY(-14px);
+}
+
+@media print {
+  html, body { background: #ffffff !important; }
+  html, body {
+    height: auto !important;
+    overflow: visible !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+  body * { visibility: hidden; }
+  #doc-print, #doc-print *,
+  #documents-print-area, #documents-print-area * { visibility: visible !important; }
+  /* Defensive: ensure the print area itself is laid out, even if an
+     ancestor on the page is `print:hidden` (display:none cascades to children
+     and would otherwise produce a blank printout). */
+  #documents-print-area {
+    display: block !important;
+    position: static !important;
+    height: auto !important;
+    overflow: visible !important;
+  }
+  /* When we explicitly enter print mode from the app, also collapse
+     non-print nodes so the document always starts on page 1, regardless
+     of where the user had scrolled before pressing พิมพ์. */
+  body.is-printing .no-print,
+  body.is-printing [data-no-print] { display: none !important; }
+  /* Guard against reflow between multi-copy print jobs: freeze the
+     preview scaler and force the printed sheet to its locked A4 size
+     so copy #2..N doesn't "jump" when the browser toggles print mode. */
+  body.is-printing [data-print-locked="true"] {
+    contain: layout style;
+    will-change: auto;
+  }
+  body.is-printing #doc-print .doc-page {
+    width: var(--doc-page-width, 210mm) !important;
+    min-width: var(--doc-page-width, 210mm) !important;
+    max-width: var(--doc-page-width, 210mm) !important;
+    height: var(--doc-page-height, 297mm) !important;
+    min-height: var(--doc-page-height, 297mm) !important;
+    max-height: var(--doc-page-height, 297mm) !important;
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+    overflow: hidden !important;
+    transform: none !important;
+    zoom: 1 !important;
+  }
+  /* Single-document print (DocumentForm): one #doc-print, anchored to page top. */
+  body:not(.is-printing-multi) #doc-print {
+    position: absolute;
+    left: 0; top: 0;
+    width: 100%;
+    margin: 0;
+    box-shadow: none;
+    background: #ffffff !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    color-adjust: exact !important;
+  }
+  /* Multi-document print (DocumentsList): docs flow naturally, one per page. */
+  body.is-printing-multi #documents-print-area {
+    position: absolute;
+    left: 0; top: 0;
+    width: 100%;
+    margin: 0;
+    background: #ffffff !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    color-adjust: exact !important;
+  }
+  body.is-printing-multi #documents-print-area #doc-print {
+    position: static !important;
+    width: 100%;
+    margin: 0;
+    box-shadow: none;
+    background: #ffffff !important;
+  }
+  body.is-printing-multi .doc-print-document {
+    page-break-after: always;
+    break-after: page;
+  }
+  body.is-printing-multi .doc-print-document:last-child {
+    page-break-after: auto;
+    break-after: auto;
+  }
+  #doc-print .doc-page {
+    box-shadow: none !important;
+    margin: 0 auto !important;
+    max-height: none;
+    overflow: visible;
+    box-sizing: border-box;
+    background: #ffffff !important;
+    background-image: none !important;
+    min-height: 0 !important;
+  }
+  #doc-print table { page-break-inside: avoid; }
+  #doc-print thead { display: table-header-group; }
+  #doc-print tfoot { display: table-footer-group; }
+  #doc-print tr, #doc-print tbody { page-break-inside: avoid; }
+  #doc-print .avoid-break { page-break-inside: avoid; break-inside: avoid; }
+  /* Keep the document header (title, parties, table head + first row) together
+     so the table never starts on a different page than the header. */
+  #doc-print .doc-header-group {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+  #doc-print thead tr { break-inside: avoid; page-break-inside: avoid; }
+  /* Glue document header to the items table so they never split across pages. */
+  #doc-print .doc-header-group {
+    page-break-after: avoid !important;
+    break-after: avoid !important;
+  }
+  #doc-print .doc-items-table {
+    page-break-before: avoid !important;
+    break-before: avoid !important;
+  }
+  #doc-print .doc-items-table thead {
+    page-break-after: avoid !important;
+    break-after: avoid !important;
+  }
+  #doc-print .doc-items-table tbody tr:first-child {
+    page-break-before: avoid !important;
+    break-before: avoid !important;
+  }
+  /* Force color/background fidelity across every printed node */
+  #doc-print, #doc-print *,
+  #documents-print-area, #documents-print-area * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+  /* Multi-document: each document stays whole, then breaks to a fresh page */
+  body.is-printing-multi #documents-print-area .doc-print-document {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+  #doc-print .doc-totals,
+  #doc-print .doc-signature,
+  #doc-print .doc-notes {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+  /* Keep headings glued to the content that follows them. */
+  #doc-print h1, #doc-print h2, #doc-print h3, #doc-print h4 {
+    page-break-after: avoid;
+    break-after: avoid;
+  }
+  /* Never split a single row, signature block, or total panel across pages. */
+  #doc-print tr,
+  #doc-print .avoid-break,
+  #doc-print .doc-page > section,
+  #doc-print .doc-totals,
+  #doc-print .doc-signature {
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+  /* User-selected page range filter: skipped pages collapse entirely so the
+     print preview only shows the requested pages. */
+  #doc-print .doc-page[data-print-skip="true"] { display: none !important; }
+  /* Kill on-screen spacing when actually printing so we never generate
+     a blank sheet from CSS margin between .doc-page nodes. */
+  #doc-print .doc-page + .doc-page { margin-top: 0 !important; }
+  /* Kill screen-only helpers so they never touch paper. */
+  #doc-print .doc-page {
+    outline: none !important;
+    box-shadow: none !important;
+  }
+  .doc-page-divider { display: none !important; }
+  /* Title in the document header must always render on a single line. */
+  #doc-print .doc-header-group h1 { white-space: nowrap; }
+  @page { size: A4 portrait; margin: 0; }
+  /* Locked A4 content area: 190×270mm. */
+  #doc-print .doc-page {
+    width: var(--doc-page-width, 210mm) !important;
+    min-width: var(--doc-page-width, 210mm) !important;
+    max-width: var(--doc-page-width, 210mm) !important;
+    height: var(--doc-page-height, 297mm) !important;
+    min-height: var(--doc-page-height, 297mm) !important;
+    max-height: var(--doc-page-height, 297mm) !important;
+    padding: var(--doc-page-padding, 10mm 10mm 17mm 10mm) !important;
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+    overflow: hidden !important;
+    transform: none !important;
+    zoom: 1 !important;
+  }
+  #doc-print[data-paper="A5"] .doc-page { max-height: none; }
+  #doc-print[data-paper="80mm"] .doc-page { max-height: none; }
+  /* Cells must never split mid-line when the font scales up. */
+  #doc-print .doc-items-table td,
+  #doc-print .doc-items-table th {
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+    vertical-align: top;
+  }
+  #doc-print .doc-items-table tr {
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+  /* Print-locked header assets: logo keeps a fixed size and never inherits
+     the user-controlled font/print scale. */
+  #doc-print .doc-header-group img {
+    transform: none !important;
+    zoom: 1 !important;
+    width: auto !important;
+    object-fit: contain !important;
+  }
+  /* Height/max-height are set via inline style so users can pick a logo
+     scale, but the value is locked at print time (no zoom/transform). */
+  /* Bundle print: reset preview separator so each doc starts cleanly on
+     its own page (page-break is applied via inline style). */
+  #doc-print .doc-print-document + .doc-print-document { margin-top: 0 !important; }
+  #doc-print .doc-header-group { --doc-font-scale: 1 !important; }
+  #doc-print .doc-page {
+    box-shadow: none !important;
+    border-top: 0 !important;
+  }
+}
+/* ---- Safe-area helpers (iOS home indicator / notch) ------------------- */
+@layer utilities {
+  .safe-bottom { padding-bottom: env(safe-area-inset-bottom, 0px); }
+  .safe-top { padding-top: env(safe-area-inset-top, 0px); }
+  .safe-x {
+    padding-left: env(safe-area-inset-left, 0px);
+    padding-right: env(safe-area-inset-right, 0px);
+  }
+}
+
+/* =====================================================================
+   MOBILE DRAWER CONTRAST — cascade-proof, deliberately OUTSIDE @layer.
+   Production reports (iPhone / installed PWA) showed white text on the
+   white drawer: any token, utility or inherited opacity that lands later
+   in the cascade could win over @layer components. These rules are
+   scoped to [data-mobile-drawer] only, so the navy desktop sidebar
+   (.admin-sidebar) is untouched, and they use literal colors so they can
+   never resolve to white-on-white regardless of theme variables.
+   ===================================================================== */
+[data-mobile-drawer] {
+  background-color: #ffffff !important;
+  color: #171717 !important;
+}
+[data-mobile-drawer] a,
+[data-mobile-drawer] button,
+[data-mobile-drawer] span,
+[data-mobile-drawer] div,
+[data-mobile-drawer] .admin-nav-item {
+  opacity: 1 !important;
+}
+[data-mobile-drawer] .admin-nav-item,
+[data-mobile-drawer] nav a {
+  color: #1f2937 !important; /* neutral-800 — 12.6:1 on white */
+}
+/* iOS Safari / installed PWA can keep a stale -webkit-text-fill-color from a
+   navy surface, which renders the label white on white while `color` is dark.
+   Force the fill colour to follow `color` for every node in the drawer, and
+   kill transitions so a half-finished animation frame can never show faded
+   or wrongly-coloured text. */
+[data-mobile-drawer],
+[data-mobile-drawer] * {
+  -webkit-text-fill-color: currentColor !important;
+  text-shadow: none !important;
+}
+[data-mobile-drawer] .admin-nav-item,
+[data-mobile-drawer] .admin-nav-item-active,
+[data-mobile-drawer] nav a {
+  transition: none !important;
+  animation: none !important;
+}
+[data-mobile-drawer] .admin-nav-item span,
+[data-mobile-drawer] nav a span {
+  color: inherit !important;
+}
+[data-mobile-drawer] .admin-nav-item svg,
+[data-mobile-drawer] nav a svg,
+[data-mobile-drawer] button svg {
+  color: currentColor !important;
+  opacity: 1 !important;
+}
+[data-mobile-drawer] .admin-nav-group-title {
+  color: #475569 !important; /* slate-600 — 7.4:1 on white */
+}
+[data-mobile-drawer] .admin-nav-item:hover,
+[data-mobile-drawer] .admin-nav-item:focus-visible,
+[data-mobile-drawer] nav a:hover,
+[data-mobile-drawer] nav a:focus-visible {
+  background-color: #e2e8f0 !important;
+  color: #0f172a !important;
+}
+[data-mobile-drawer] .admin-nav-item-active,
+[data-mobile-drawer] nav a[aria-current="page"] {
+  background-color: #1d4ed8 !important; /* blue-700 — 8.6:1 with white */
+  color: #ffffff !important;
+  font-weight: 700 !important;
+}
+[data-mobile-drawer] [aria-disabled="true"],
+[data-mobile-drawer] button:disabled {
+  color: #64748b !important; /* still readable (4.8:1), never invisible */
+}
+[data-mobile-drawer] :focus-visible {
+  outline: 2px solid #1d4ed8 !important;
+  outline-offset: 2px;
+}
+/* Footer + header rows inside the drawer (ติดตั้ง / ออกจากระบบ / บัญชี). */
+[data-mobile-drawer] .text-muted-foreground { color: #475569 !important; }
+[data-mobile-drawer] button[data-state],
+[data-mobile-drawer] .absolute.right-4.top-4 { color: #1f2937 !important; }
+
+.dark [data-mobile-drawer] {
+  background-color: #0b1220 !important;
+  color: #f8fafc !important;
+}
+.dark [data-mobile-drawer] .admin-nav-item,
+.dark [data-mobile-drawer] nav a { color: #e2e8f0 !important; }
+.dark [data-mobile-drawer] .admin-nav-group-title { color: #cbd5e1 !important; }
+.dark [data-mobile-drawer] .text-muted-foreground { color: #cbd5e1 !important; }
+.dark [data-mobile-drawer] .admin-nav-item:hover,
+.dark [data-mobile-drawer] .admin-nav-item:focus-visible,
+.dark [data-mobile-drawer] nav a:hover,
+.dark [data-mobile-drawer] nav a:focus-visible {
+  background-color: #1e293b !important;
+  color: #ffffff !important;
+}
+.dark [data-mobile-drawer] .admin-nav-item-active,
+.dark [data-mobile-drawer] nav a[aria-current="page"] {
+  background-color: #3b82f6 !important;
+  color: #0b1220 !important;
+}
+.dark [data-mobile-drawer] [aria-disabled="true"],
+.dark [data-mobile-drawer] button:disabled { color: #94a3b8 !important; }
+
+/* =====================================================================
+   MOBILE-FRIENDLY DATA TABLES (screen only)
+   Every data table gets a horizontal scroll container ([data-table-scroll]
+   — added by <Table> and, for raw <table> markup, by <MobileTableFit/>),
+   plus compact padding on small screens so columns stay readable instead
+   of squeezing or pushing the page sideways.
+   Print / document previews are excluded: their layout is locked to paper.
+   ===================================================================== */
+@media screen {
+  [data-table-scroll] {
+    max-width: 100%;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    -webkit-overflow-scrolling: touch;
+  }
+  /* Auto-width tables scroll sideways; tables that declare their own fixed
+     column layout (table-fixed) must stay inside the content area instead. */
+  [data-table-scroll] > table:not(.table-fixed) {
+    min-width: max-content;
+  }
+  [data-table-scroll] > table.table-fixed {
+    min-width: 0;
+    width: 100%;
+  }
+}
+
+@media screen and (max-width: 767px) {
+  [data-table-scroll] > table {
+    font-size: 0.8125rem; /* 13px — readable without zooming */
+    line-height: 1.25rem;
+  }
+  [data-table-scroll] > table th,
+  [data-table-scroll] > table td {
+    padding: 0.5rem 0.625rem !important;
+    white-space: nowrap;
+    height: auto !important;
+  }
+  /* Fixed-layout tables wrap instead of forcing a sideways scroll. */
+  [data-table-scroll] > table.table-fixed th,
+  [data-table-scroll] > table.table-fixed td {
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+  /* Cells that really need to wrap can opt in. */
+  [data-table-scroll] > table th[data-wrap],
+  [data-table-scroll] > table td[data-wrap] {
+    white-space: normal;
+    min-width: 9rem;
+  }
+  /* Thumb hint so users know the table scrolls sideways. */
+  [data-table-scroll]::-webkit-scrollbar { height: 6px; }
+  [data-table-scroll]::-webkit-scrollbar-thumb {
+    background: hsl(var(--muted-foreground) / 0.35);
+    border-radius: 9999px;
+  }
+}
+
+/* Never touch paper layouts. */
+.doc-page [data-table-scroll],
+.print-container [data-table-scroll],
+.print-page [data-table-scroll],
+.doc-print-document [data-table-scroll],
+[data-print-root] [data-table-scroll] {
+  overflow: visible !important;
+}
+.doc-page [data-table-scroll] > table,
+.print-container [data-table-scroll] > table,
+.print-page [data-table-scroll] > table,
+.doc-print-document [data-table-scroll] > table,
+[data-print-root] [data-table-scroll] > table {
+  min-width: 0 !important;
+  font-size: inherit;
+}
+@media print {
+  [data-table-scroll] { overflow: visible !important; }
+  [data-table-scroll] > table { min-width: 0 !important; }
+}
+
+/* =====================================================================
+   STICKY HEADER + FIRST COLUMN (screen only)
+   <MobileTableFit/> marks tall tables with [data-table-sticky]. The scroll
+   container then scrolls in both axes so the header row and the first
+   column can stay pinned while reading wide data on a phone or tablet.
+   Opt out per table with [data-no-sticky].
+   ===================================================================== */
+@media screen {
+  [data-table-scroll][data-table-sticky] {
+    overflow: auto;
+    max-height: min(70vh, 640px);
+  }
+  [data-table-scroll][data-table-sticky] > table > thead th {
+    position: sticky;
+    top: 0;
+    z-index: 3;
+    background-color: hsl(var(--muted));
+  }
+  [data-table-scroll][data-table-sticky] > table > thead th:first-child,
+  [data-table-scroll][data-table-sticky] > table > tbody td:first-child,
+  [data-table-scroll][data-table-sticky] > table > tbody th:first-child {
+    position: sticky;
+    left: 0;
+    background-color: hsl(var(--card));
+    box-shadow: 1px 0 0 0 hsl(var(--border));
+  }
+  [data-table-scroll][data-table-sticky] > table > thead th:first-child {
+    z-index: 4;
+    background-color: hsl(var(--muted));
+  }
+  [data-table-scroll][data-table-sticky] > table > tbody td:first-child {
+    z-index: 2;
+  }
+}
+
+/* Row action cells: never let a long button row push the table sideways. */
+@media screen and (max-width: 767px) {
+  [data-row-actions] {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.25rem;
+  }
+}
+
+/* =====================================================================
+   MOBILE / TABLET CARD MODE (screen only)
+   <MobileTableFit/> decides in JS when a table should become cards:
+   phones (<=639px) for 3+ columns, tablets (<=1023px) for very wide
+   tables ([data-mobile-cards="wide"]). Each row becomes one card with a
+   bold title, label-value pairs, and secondary fields folded behind a
+   “ดูเพิ่มเติม” toggle. Opt out per table with [data-no-cards].
+   ===================================================================== */
+@media screen {
+  [data-table-scroll][data-mobile-cards] {
+    overflow: visible !important;
+    max-height: none !important;
+  }
+  [data-table-scroll][data-mobile-cards] > table,
+  [data-table-scroll][data-mobile-cards] > table > tbody,
+  [data-table-scroll][data-mobile-cards] > table > tbody > tr,
+  [data-table-scroll][data-mobile-cards] > table > tbody > tr > td,
+  [data-table-scroll][data-mobile-cards] > table > tbody > tr > th {
+    display: block;
+    width: auto !important;
+    min-width: 0 !important;
+  }
+  [data-table-scroll][data-mobile-cards] > table > thead {
+    position: absolute !important;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+  [data-table-scroll][data-mobile-cards] > table > tbody > tr {
+    margin-bottom: 0.625rem;
+    border: 1px solid hsl(var(--border));
+    border-radius: 0.75rem;
+    background-color: hsl(var(--card));
+    padding: 0.25rem 0.125rem;
+    overflow: hidden;
+  }
+  [data-table-scroll][data-mobile-cards] > table > tbody > tr > td,
+  [data-table-scroll][data-mobile-cards] > table > tbody > tr > th {
+    display: flex !important;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    text-align: right;
+    white-space: normal !important;
+    position: static !important;
+    box-shadow: none !important;
+    border: 0 !important;
+    padding: 0.4375rem 0.75rem !important;
+  }
+  [data-table-scroll][data-mobile-cards] > table > tbody > tr > td[data-label]::before,
+  [data-table-scroll][data-mobile-cards] > table > tbody > tr > th[data-label]::before {
+    content: attr(data-label);
+    flex: 0 0 auto;
+    max-width: 45%;
+    text-align: left;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    color: hsl(var(--muted-foreground));
+  }
+  /* Empty-state / "no results" rows stay full width without a label. */
+  [data-table-scroll][data-mobile-cards] > table > tbody > tr > td[colspan] {
+    justify-content: center;
+    text-align: center;
+  }
+  [data-table-scroll][data-mobile-cards] > table > tbody > tr > td[colspan]::before {
+    content: none;
+  }
+  /* Everything tappable inside a card keeps a comfortable touch target. */
+  [data-table-scroll][data-mobile-cards] button:not([data-compact]),
+  [data-table-scroll][data-mobile-cards] a[role="button"],
+  [data-table-scroll][data-mobile-cards] [role="checkbox"] {
+    min-height: 2.75rem;
+  }
+  [data-table-scroll][data-mobile-cards] [role="checkbox"] {
+    min-width: 1.25rem;
+  }
+  [data-table-scroll][data-mobile-cards] [data-row-actions] {
+    flex-wrap: wrap;
+  }
+  /* First cell = card title: full width, bold, no label prefix. */
+  [data-table-scroll][data-mobile-cards] > table > tbody > tr > td:first-child,
+  [data-table-scroll][data-mobile-cards] > table > tbody > tr > th:first-child {
+    justify-content: space-between;
+    text-align: left;
+    font-weight: 700;
+    font-size: 0.9375rem;
+    padding-top: 0.625rem !important;
+    border-bottom: 1px solid hsl(var(--border)) !important;
+  }
+  [data-table-scroll][data-mobile-cards] > table > tbody > tr > td:first-child[data-label]::before,
+  [data-table-scroll][data-mobile-cards] > table > tbody > tr > th:first-child[data-label]::before {
+    content: none;
+  }
+  /* Expandable rows: secondary fields stay hidden until “ดูเพิ่มเติม”. */
+  [data-table-scroll][data-mobile-cards] > table > tbody > tr[data-card-collapsible]:not([data-card-open]) > td[data-card-index]:not([data-card-keep]):not([data-card-index="0"]):not([data-card-index="1"]):not([data-card-index="2"]) {
+    display: none !important;
+  }
+  [data-table-scroll][data-mobile-cards] [data-card-toggle] {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 2.25rem;
+    min-width: 5.5rem;
+    padding: 0 0.75rem;
+    border-radius: 9999px;
+    border: 1px solid hsl(var(--border));
+    background-color: hsl(var(--muted));
+    color: hsl(var(--muted-foreground));
+    font-size: 0.6875rem;
+    font-weight: 600;
+  }
+}
+
+/* Card-mode refinements: empty-state rows, footer totals, tap targets. */
+@media screen {
+  /* Rows that span the whole table (empty state, group headers). */
+  [data-table-scroll][data-mobile-cards] > table > tbody > tr[data-card-full] {
+    border-style: dashed;
+    background-color: transparent;
+  }
+  [data-table-scroll][data-mobile-cards] > table > tbody > tr[data-card-full] > td {
+    display: block !important;
+    text-align: center;
+    justify-content: center;
+    border-bottom: 0 !important;
+    font-weight: 500;
+  }
+  [data-table-scroll][data-mobile-cards] > table > tbody > tr[data-card-full] > td::before { content: none !important; }
+  /* Blank cells add nothing to a card. */
+  [data-table-scroll][data-mobile-cards] > table > tbody > tr > td[data-card-empty] { display: none !important; }
+  /* Footer totals read as one summary card. */
+  [data-table-scroll][data-mobile-cards] > table > tfoot,
+  [data-table-scroll][data-mobile-cards] > table > tfoot > tr,
+  [data-table-scroll][data-mobile-cards] > table > tfoot > tr > td,
+  [data-table-scroll][data-mobile-cards] > table > tfoot > tr > th {
+    display: block;
+    width: auto !important;
+  }
+  [data-table-scroll][data-mobile-cards] > table > tfoot > tr {
+    margin-top: 0.25rem;
+    border: 1px solid hsl(var(--border));
+    border-radius: 0.75rem;
+    background-color: hsl(var(--muted));
+    padding: 0.25rem 0.125rem;
+  }
+  [data-table-scroll][data-mobile-cards] > table > tfoot > tr > td,
+  [data-table-scroll][data-mobile-cards] > table > tfoot > tr > th {
+    display: flex !important;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    text-align: right;
+    font-weight: 600;
+  }
+  [data-table-scroll][data-mobile-cards] > table > tfoot > tr > td[data-label]::before,
+  [data-table-scroll][data-mobile-cards] > table > tfoot > tr > th[data-label]::before {
+    content: attr(data-label);
+    font-weight: 500;
+    color: hsl(var(--muted-foreground));
+    text-align: left;
+  }
+  /* Comfortable tap targets for anything actionable inside a card. */
+  [data-table-scroll][data-mobile-cards] > table > tbody > tr > td button,
+  [data-table-scroll][data-mobile-cards] > table > tbody > tr > td a[role="button"],
+  [data-table-scroll][data-mobile-cards] > table > tbody > tr > td [role="checkbox"] {
+    min-height: 2.75rem;
+    min-width: 2.75rem;
+  }
+  [data-table-scroll][data-mobile-cards] [data-card-toggle] { min-height: 2.75rem !important; }
+  [data-table-scroll][data-mobile-cards] > table > tbody > tr > td[data-card-keep] {
+    flex-wrap: wrap;
+    row-gap: 0.375rem;
+  }
+}
+
+/* PC: roomier rows, aligned numbers and a clear hover target. */
+@media screen and (min-width: 1024px) {
+  [data-table-scroll] > table th,
+  [data-table-scroll] > table td {
+    padding-top: 0.625rem;
+    padding-bottom: 0.625rem;
+  }
+  [data-table-scroll] > table tbody tr:hover { background-color: hsl(var(--muted) / 0.5); }
+}
+
+/* Toggle button only exists for card mode. */
+
+[data-card-toggle] {
+  display: none;
+}
+
+/* Paper layouts never use card mode. */
+.doc-page [data-table-scroll][data-mobile-cards],
+.print-container [data-table-scroll][data-mobile-cards],
+.print-page [data-table-scroll][data-mobile-cards],
+[data-print-root] [data-table-scroll][data-mobile-cards] {
+  overflow: visible !important;
+}
+@media print {
+  [data-table-scroll][data-mobile-cards] > table,
+  [data-table-scroll][data-mobile-cards] > table > thead,
+  [data-table-scroll][data-mobile-cards] > table > tbody,
+  [data-table-scroll][data-mobile-cards] > table > tbody > tr,
+  [data-table-scroll][data-mobile-cards] > table > tfoot,
+  [data-table-scroll][data-mobile-cards] > table > tfoot > tr,
+  [data-table-scroll][data-mobile-cards] > table > tfoot > tr > td,
+  [data-table-scroll][data-mobile-cards] > table > tfoot > tr > th {
+    display: revert !important;
+  }
+  [data-table-scroll][data-mobile-cards] > table > tbody > tr > td::before,
+  [data-table-scroll][data-mobile-cards] > table > tbody > tr > th::before {
+    content: none !important;
+  }
+}
+
+/* Paper layouts keep their own rules. */
+.doc-page [data-table-scroll][data-table-sticky],
+.print-container [data-table-scroll][data-table-sticky],
+.print-page [data-table-scroll][data-table-sticky],
+[data-print-root] [data-table-scroll][data-table-sticky] {
+  max-height: none !important;
+  overflow: visible !important;
+}
+@media print {
+  [data-table-scroll][data-table-sticky] { max-height: none !important; overflow: visible !important; }
+  [data-table-scroll][data-table-sticky] > table > thead th,
+  [data-table-scroll][data-table-sticky] > table > tbody td:first-child {
+    position: static !important;
+    box-shadow: none !important;
+  }
+}
+
+/* ------------------------------------------------------------------
+   Reduced motion. Active when the user picks "ลดแอนิเมชัน" in settings
+   or the OS reports prefers-reduced-motion (mode "auto"). Removing the
+   transitions also removes the flicker / colour-shift artefacts some
+   devices show while animating state changes.
+   ------------------------------------------------------------------ */
+html[data-reduce-motion="1"] *,
+html[data-reduce-motion="1"] *::before,
+html[data-reduce-motion="1"] *::after {
+  animation-duration: 0.001ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.001ms !important;
+  transition-delay: 0ms !important;
+  scroll-behavior: auto !important;
+}
+/* NOTE: never touch `transform` on [data-radix-popper-content-wrapper] —
+   Floating UI writes the popper position into that inline transform, so
+   overriding it collapses every dropdown/tooltip/popover to the top-left. */
+html[data-reduce-motion="1"] [data-mobile-drawer] {
+  transform: none !important;
+  opacity: 1 !important;
+}
+
+/* ------------------------------------------------------------------
+   High contrast + comfortable reading mode (per-device preference,
+   set in Settings → "การแสดงผล / อ่านสบาย").
+   ------------------------------------------------------------------ */
+html[data-contrast="high"] {
+  --muted-foreground: 215 30% 25%;
+  --border: 215 30% 40%;
+}
+html[data-contrast="high"].dark {
+  --muted-foreground: 210 30% 88%;
+  --border: 210 25% 65%;
+}
+html[data-contrast="high"] .text-muted-foreground {
+  color: hsl(var(--foreground)) !important;
+}
+html[data-contrast="high"] [data-mobile-drawer] a,
+html[data-contrast="high"] [data-mobile-drawer] button,
+html[data-contrast="high"] [data-mobile-drawer] span {
+  color: hsl(var(--foreground));
+}
+html[data-contrast="high"] table th,
+html[data-contrast="high"] table td {
+  border-color: hsl(var(--border)) !important;
+}
+html[data-contrast="high"] table tbody tr {
+  border-bottom: 1px solid hsl(var(--border));
+}
+html[data-contrast="high"] :focus-visible {
+  outline: 3px solid hsl(var(--primary)) !important;
+  outline-offset: 2px;
+}
+
+html[data-text-size="large"] {
+  font-size: 112.5%;
+}
+html[data-text-size="large"] table th,
+html[data-text-size="large"] table td {
+  padding-top: 0.6rem !important;
+  padding-bottom: 0.6rem !important;
+}
+html[data-text-size="large"] [data-mobile-drawer] a,
+html[data-text-size="large"] [data-mobile-drawer] button {
+  min-height: 3rem;
+}
+@media print {
+  html[data-text-size="large"] { font-size: 100%; }
+}
+
+/* ------------------------------------------------------------------
+   Manual layout tuning (ปุ่ม "ปรับหน้าจอ" มุมจอ) — per-device only.
+   ตัวแปรถูกตั้งจาก src/lib/layoutPref.ts และไม่มีผลตอนพิมพ์
+   ------------------------------------------------------------------ */
+html {
+  font-size: calc(100% * var(--ui-font-scale, 1));
+}
+html[data-text-size="large"] {
+  font-size: calc(112.5% * var(--ui-font-scale, 1));
+}
+
+html[data-ui-width="narrow"] .max-w-7xl { max-width: 64rem; }
+html[data-ui-width="narrow"] .max-w-6xl { max-width: 56rem; }
+html[data-ui-width="wide"] .max-w-7xl,
+html[data-ui-width="wide"] .max-w-6xl,
+html[data-ui-width="wide"] .max-w-5xl,
+html[data-ui-width="wide"] .max-w-4xl { max-width: 100%; }
+
+html[data-ui-density="compact"] table th,
+html[data-ui-density="compact"] table td {
+  padding-top: 0.25rem !important;
+  padding-bottom: 0.25rem !important;
+}
+html[data-ui-density="compact"] .ng-card { padding: 0.75rem; }
+html[data-ui-density="roomy"] table th,
+html[data-ui-density="roomy"] table td {
+  padding-top: 0.85rem !important;
+  padding-bottom: 0.85rem !important;
+}
+html[data-ui-density="roomy"] .ng-card { padding: 1.5rem; }
+
+html[data-ui-arrange] [data-block-id] { cursor: grab; }
+
+@media print {
+  html,
+  html[data-text-size="large"] { font-size: 100% !important; }
+  html[data-ui-width] .max-w-7xl,
+  html[data-ui-width] .max-w-6xl,
+  html[data-ui-width] .max-w-5xl,
+  html[data-ui-width] .max-w-4xl { max-width: none; }
+  html[data-ui-density] table th,
+  html[data-ui-density] table td {
+    padding-top: revert !important;
+    padding-bottom: revert !important;
+  }
+}
+
+
+/* ---------------------------------------------------------------
+   Shared print-surface rules (Goal C). Keep in sync with
+   src/lib/printScale.ts SHARED_PRINT_CSS — used by every print
+   preview across the app so paper scaling + print output stay
+   consistent regardless of device width or paper size.
+   --------------------------------------------------------------- */
+.paper-viewport { overflow: hidden; }
+.paper-viewport__sheet { transform-origin: top center; background: #ffffff; }
+
+@media print {
+  .paper-viewport { overflow: visible !important; height: auto !important; }
+  .paper-viewport__sheet { transform: none !important; width: auto !important; min-height: 0 !important; }
+  .no-print, [data-no-print] { display: none !important; }
+  * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  table { width: 100%; table-layout: fixed; }
+  table, td, th { word-break: break-word; overflow-wrap: anywhere; }
+  thead { display: table-header-group; }
+  tr, .summary-block, .signature-block { break-inside: avoid; page-break-inside: avoid; }
+}
+
+/* ---------------------------------------------------------------
+   NATTA GROUP shared surface (Round 2)
+   `.ng-surface` is applied once by the admin/workspace/POS shells so
+   every page inside them inherits the same card / table / tab / input
+   / dialog language without per-page CSS. Presentation only.
+   --------------------------------------------------------------- */
+.ng-surface-compact {
+  font-size: 13.5px;
+}
+/* Cards — thin border, soft shadow, radius 12 */
+.ng-surface .bg-card,
+.ng-surface .ng-card {
+  border-radius: 0.75rem;
+  border-color: hsl(215 25% 27% / 0.1);
+  box-shadow: 0 1px 2px hsl(220 43% 11% / 0.06);
+}
+.ng-surface h1 { font-size: 1.125rem; line-height: 1.4; }
+.ng-surface h2 { font-size: 1rem; line-height: 1.4; }
+.ng-surface h3 { font-size: 0.9375rem; line-height: 1.4; font-weight: 700; letter-spacing: 0; }
+/* Tables — compact head + rows */
+.ng-surface thead {
+  background: hsl(210 20% 97%);
+}
+.ng-surface thead th {
+  height: 2.375rem;
+  padding-top: 0.375rem;
+  padding-bottom: 0.375rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.ng-surface tbody td {
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
+  font-size: 0.8125rem;
+}
+/* Tabs — medium radius + brand active state */
+.ng-surface [role="tablist"] { border-radius: 0.625rem; }
+.ng-surface [role="tab"] { border-radius: 0.5rem; font-size: 0.8125rem; }
+.ng-surface [role="tab"][data-state="active"] {
+  color: hsl(var(--brand));
+  font-weight: 700;
+}
+/* Controls — consistent medium radius */
+.ng-surface button.rounded-md,
+.ng-surface input.rounded-md,
+.ng-surface textarea.rounded-md,
+.ng-surface select.rounded-md,
+.ng-surface [role="combobox"].rounded-md {
+  border-radius: 0.625rem;
+}
+/* Dialogs / drawers are portalled — mark them from the shell theme root */
+[role="dialog"].sm\:rounded-lg { border-radius: 0.75rem; }
+
+/* ซับไตเติลวิดีโอสอนลูกค้า — ตัวใหญ่ อ่านง่าย พื้นหลังทึบ */
+.tutorial-video::cue {
+  font-size: 1.05rem;
+  line-height: 1.6;
+  font-weight: 600;
+  color: #fff;
+  background: rgba(12, 10, 32, 0.82);
+}
+@media (min-width: 768px) {
+  .tutorial-video::cue { font-size: 1.25rem; }
+}
+
+/* Shared rounded corners: comfortable but restrained (8–12px). */
+:root,
+[data-store] {
+  --radius: 10px;
+  --ng-radius-card: 10px;
+  --ng-radius-tile: 10px;
+  --ng-radius-chip: 8px;
+}
+
+.rounded-full,
+[class*="rounded-full"] {
+  border-radius: 9999px !important;
+}
+
+/* ── Portal design language ──────────────────────────────────────
+   การ์ดพื้นขาว เส้นขอบบาง เงานุ่ม ใช้ร่วมกันทั้งหน้าแรกลูกค้าและแดชบอร์ด
+   (มุมยังคงเป็นเหลี่ยมตามระบบเดิมทั้งหมด) */
+.portal-canvas { background: hsl(var(--portal-canvas)); }
+.portal-card {
+  background: hsl(var(--portal-card));
+  border: 1px solid hsl(var(--portal-line));
+  box-shadow: var(--shadow-portal);
+}
+.portal-card-link {
+  transition: box-shadow 180ms ease, border-color 180ms ease, transform 180ms ease;
+}
+.portal-card-link:hover {
+  box-shadow: var(--shadow-portal-hover);
+  border-color: hsl(var(--brand) / 0.45);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .portal-card-link:hover { transform: translateY(-2px); }
+  .portal-card-link:hover .portal-arrow { transform: translateX(4px); }
+}
+.portal-arrow { transition: transform 180ms ease; }

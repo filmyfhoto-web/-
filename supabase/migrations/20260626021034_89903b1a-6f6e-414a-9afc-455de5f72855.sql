@@ -1,0 +1,1 @@
+ALTER TABLE public.rds_stores ADD COLUMN IF NOT EXISTS doc_theme jsonb NOT NULL DEFAULT '{}'::jsonb;

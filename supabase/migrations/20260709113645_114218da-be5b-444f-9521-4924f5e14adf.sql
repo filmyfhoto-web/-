@@ -1,0 +1,1 @@
+DELETE FROM public.nw_line_webhook_events WHERE line_user_id LIKE 'Uabcdef%'; DELETE FROM public.nw_work_orders WHERE customer_name_snap='คุณทดสอบ' AND channel='line';

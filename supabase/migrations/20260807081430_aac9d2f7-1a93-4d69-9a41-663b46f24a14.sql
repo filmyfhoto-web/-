@@ -1,0 +1,1 @@
+DELETE FROM public.line_webhook_events WHERE signature_ok = false AND event_type = 'signature_mismatch' AND (raw->>'body_preview') IN ('{}','');

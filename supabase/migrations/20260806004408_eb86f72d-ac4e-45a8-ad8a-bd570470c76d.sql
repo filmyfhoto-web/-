@@ -1,0 +1,1 @@
+UPDATE public.shop_theme_settings SET primary_hsl = '214 84% 47%', accent_hsl = '204 94% 66%', updated_at = now() WHERE id = 1;

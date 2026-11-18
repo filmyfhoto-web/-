@@ -1,0 +1,97 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1788308481132,
+      "tag": "0000_film_receipts_only_queue_intake",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1788361182188,
+      "tag": "0001_film_receipts_only_queue_flow",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1788406795071,
+      "tag": "0002_grant_execute_customer_owns_document",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1788452674412,
+      "tag": "0003_natta_accountant_line",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1788456663587,
+      "tag": "0004_film_shop_managers",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1788458686431,
+      "tag": "0005_film_natta_quick_entries",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1788479582028,
+      "tag": "0006_film_shop_managers_admin_manage",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1788480814260,
+      "tag": "0007_film_tx_evidence_and_indexes",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1788483323059,
+      "tag": "0008_film_tx_payment_method",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1789613114170,
+      "tag": "0009_restrict_customer_updates_staff_columns",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1792128788405,
+      "tag": "0010_consent_versions_signed_in_read",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1793201570362,
+      "tag": "0011_restrict_public_reads_signed_in",
+      "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1794463785437,
+      "tag": "0012_restrict_icon_and_site_asset_reads_to_admins",
+      "breakpoints": true
+    }
+  ]
+}

@@ -1,0 +1,56 @@
+name: Guest order timeline (e2e)
+
+# Runs the guest-order-timeline Playwright suite whenever the RPC contract,
+# the customer-facing timeline UI, the cart submit flow, or the suite itself
+# changes. This guards against regressions in:
+#   - get_order_status_events RPC access rules
+#   - MyOrderDetail token-gated rendering
+#   - Cart single-click submit / disabled-while-in-flight behaviour
+#   - Empty-events placeholder rendering
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "src/pages/MyOrderDetail.tsx"
+      - "src/pages/Cart.tsx"
+      - "supabase/functions/guest-order-submit/**"
+      - "supabase/migrations/**"
+      - "tests/e2e/guest-order-timeline.spec.ts"
+  pull_request:
+    paths:
+      - "src/pages/MyOrderDetail.tsx"
+      - "src/pages/Cart.tsx"
+      - "supabase/functions/guest-order-submit/**"
+      - "supabase/migrations/**"
+      - "tests/e2e/guest-order-timeline.spec.ts"
+  workflow_dispatch:
+
+jobs:
+  guest-order-timeline:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+      - name: Install Playwright browsers
+        run: bunx playwright install --with-deps chromium
+      - name: Run guest-order-timeline suite
+        run: bun run test:e2e:guest-order-timeline -- --project=chromium --reporter=list,html
+        env:
+          CI: "true"
+      - name: Upload Playwright report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: guest-order-timeline-report
+          path: |
+            playwright-report
+            test-results
+          retention-days: 14

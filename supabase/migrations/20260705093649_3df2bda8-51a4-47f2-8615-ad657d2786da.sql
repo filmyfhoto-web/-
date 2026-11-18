@@ -1,0 +1,1 @@
+ALTER TABLE public.line_account_links ALTER COLUMN phone DROP NOT NULL;

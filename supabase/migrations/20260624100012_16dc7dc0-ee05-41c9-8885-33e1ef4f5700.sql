@@ -1,0 +1,1 @@
+ALTER TABLE public.rds_documents ADD COLUMN IF NOT EXISTS print_mode TEXT NOT NULL DEFAULT 'fit_a4';

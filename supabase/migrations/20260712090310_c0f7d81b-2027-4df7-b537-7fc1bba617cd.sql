@@ -1,0 +1,3 @@
+ALTER TABLE public.nw_work_orders
+  ADD COLUMN IF NOT EXISTS accepted_at TIMESTAMPTZ,
+  ADD COLUMN IF NOT EXISTS delivered_at TIMESTAMPTZ;

@@ -1,0 +1,17 @@
+{
+  "id": "/?app=film-shop",
+  "name": "Film Shop — ร้านนัฐภรณ์",
+  "short_name": "Film Shop",
+  "description": "ระบบจัดการร้านฟิล์ม: ออเดอร์ คิวงาน งานพิมพ์ และสต๊อก",
+  "start_url": "/launch?app=film-shop",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#0b1220",
+  "theme_color": "#6366f1",
+  "lang": "th",
+  "icons": [
+    { "src": "/icons/staff-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/staff-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" }
+  ]
+}

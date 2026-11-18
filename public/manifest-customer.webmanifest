@@ -1,0 +1,19 @@
+{
+  "id": "/?app=customer",
+  "name": "ร้านนัฐภรณ์ เชียงกลาง — สั่งซื้อสินค้า",
+  "short_name": "ร้านนัฐภรณ์",
+  "description": "สั่งซื้อสินค้า ขอใบเสนอราคา และติดตามคำสั่งซื้อของร้านนัฐภรณ์ เชียงกลาง",
+  "start_url": "/launch?app=customer",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#ffffff",
+  "theme_color": "#7a5a3f",
+  "lang": "th",
+  "icons": [
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

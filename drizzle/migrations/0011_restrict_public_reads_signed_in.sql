@@ -1,0 +1,10 @@
+DROP POLICY IF EXISTS pwa_app_profiles_read_all ON public.pwa_app_profiles;
+CREATE POLICY pwa_app_profiles_signed_in_read ON public.pwa_app_profiles FOR SELECT TO authenticated USING (auth.uid() IS NOT NULL);
+REVOKE SELECT ON public.pwa_app_profiles FROM anon;
+DROP POLICY IF EXISTS "anyone read categories" ON public.categories;
+CREATE POLICY categories_signed_in_read ON public.categories FOR SELECT TO authenticated USING (auth.uid() IS NOT NULL);
+REVOKE SELECT ON public.categories FROM anon;
+DROP POLICY IF EXISTS pwa_icons_public_read ON storage.objects;
+CREATE POLICY pwa_icons_signed_in_read ON storage.objects FOR SELECT TO authenticated USING (bucket_id = 'pwa-icons' AND auth.uid() IS NOT NULL);
+DROP POLICY IF EXISTS website_assets_public_read ON storage.objects;
+CREATE POLICY website_assets_signed_in_read ON storage.objects FOR SELECT TO authenticated USING (bucket_id = 'website-assets' AND auth.uid() IS NOT NULL);

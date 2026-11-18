@@ -1,0 +1,2 @@
+select net.http_get(url:='https://api.line.me/v2/bot/info', headers:=jsonb_build_object('Authorization','Bearer '||(select channel_access_token from line_credentials where id='shop2')));
+select net.http_get(url:='https://api.line.me/v2/bot/info', headers:=jsonb_build_object('Authorization','Bearer '||(select channel_access_token from line_credentials where id='default')));

@@ -1,0 +1,5 @@
+UPDATE public.line_credentials SET channel_secret='c6f2fb1052b7f498f32076f4d7cb90d8', channel_access_token='Sj/DZpsjHFyvv8CSLk3YwJfNzDcp8rfCyYZNY0WbtaxGdRt1SRO7E/RyFzf3Bdq2h79nQw4uABFyQSiAz/qdOxQrtRUdFEbZU23BLBAVoVGUzFebMV7CcqNQoK7vyalHXh+ZkLlj6Zdq+LEPsxS1vAdB04t89/1O/w1cDnyilFU=', updated_at=now() WHERE id='runqueue';
+
+UPDATE public.line_credentials SET channel_secret='12c731e0a7ea714fab9d449f5c417201', channel_access_token='PHqwlz6eIEWxBstRZ9X3fHmUuc1bp/8Brndl0Ay4RSDm09+KYNSHKhGeUNUBv52ntdQO34d754GxOcWyd1xD992hvDkX3f7qr3xigPOeOal6fh9L3UkWArX9btlEPKg8+QjhsZX9/GNfvNkW5MvOhwdB04t89/1O/w1cDnyilFU=', updated_at=now() WHERE id='shop2';
+
+UPDATE public.line_credentials SET channel_secret='5b8011e97117a3dfc990e06a9145722f', channel_access_token='Ugtwiz4S3bt0RhikUncTDQzyVOClSnFph3N4KD12wXAy3qcw9IY28AAjcRJ6g2MmDzSqaCg3E/6NxaT/fndcij+qnuk0i9icyQuyoRmnRK+T9yTO7OCBC5DpuoLSEiiLesvdAQB7JVs76oLZ2g4f1AdB04t89/1O/w1cDnyilFU=', updated_at=now() WHERE id='default';

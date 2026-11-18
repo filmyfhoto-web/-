@@ -1,0 +1,1 @@
+REVOKE ALL ON FUNCTION public.has_accepted_staff_invite(uuid, uuid, app_role) FROM anon, authenticated;

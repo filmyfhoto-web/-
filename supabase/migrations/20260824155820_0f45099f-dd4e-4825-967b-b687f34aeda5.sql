@@ -1,0 +1,1 @@
+revoke all on function public.notify_staff_new_customer_doc() from anon, authenticated, public;

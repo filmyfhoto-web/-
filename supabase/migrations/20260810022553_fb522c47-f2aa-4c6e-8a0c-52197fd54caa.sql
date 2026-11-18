@@ -1,0 +1,3 @@
+DROP FUNCTION IF EXISTS public.film_raise_ops_notification(text,text,text,text,uuid,uuid,text,uuid,text,integer);
+REVOKE ALL ON FUNCTION public.film_raise_ops_notification(text,text,text,text,uuid,uuid,text,uuid,text,integer,text,smallint) FROM public;
+GRANT EXECUTE ON FUNCTION public.film_raise_ops_notification(text,text,text,text,uuid,uuid,text,uuid,text,integer,text,smallint) TO service_role, anon, authenticated;

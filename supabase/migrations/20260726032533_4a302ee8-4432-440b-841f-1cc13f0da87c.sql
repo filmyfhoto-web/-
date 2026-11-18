@@ -1,0 +1,2 @@
+ALTER TABLE public.admin_invitations DROP CONSTRAINT IF EXISTS admin_invitations_channel_check;
+ALTER TABLE public.admin_invitations ADD CONSTRAINT admin_invitations_channel_check CHECK (channel IN ('email','line','link'));

@@ -1,0 +1,1 @@
+REVOKE EXECUTE ON FUNCTION public.trg_import_jobs_cleanup() FROM PUBLIC, anon;

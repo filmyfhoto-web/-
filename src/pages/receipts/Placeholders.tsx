@@ -1,0 +1,1 @@
+export { default as ReceiptsSettings } from "./settings/Settings";

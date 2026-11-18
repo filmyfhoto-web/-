@@ -1,0 +1,11 @@
+{
+  "applinks": {
+    "apps": [],
+    "details": [
+      {
+        "appID": "7S55X33Y2U.com.filmyynatta.app",
+        "paths": ["/shop/*", "/order/*", "/pos/*", "/staff/*", "/admin/*", "/film-shop/*", "/l/*"]
+      }
+    ]
+  }
+}

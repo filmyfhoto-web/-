@@ -1,0 +1,1 @@
+UPDATE public.line_oa_settings SET liff_endpoint_url = 'https://filmyynatta.com/l/shop', updated_at = now() WHERE liff_endpoint_url <> 'https://filmyynatta.com/l/shop';

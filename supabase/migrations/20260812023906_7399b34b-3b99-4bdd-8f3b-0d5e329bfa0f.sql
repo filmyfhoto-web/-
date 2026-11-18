@@ -1,0 +1,2 @@
+UPDATE public.line_notification_channels SET queue_commands_enabled = false, is_hub = false, updated_at = now() WHERE id = '48b3e947-27db-4e74-baf6-24afac62a52b';
+UPDATE public.line_notification_channels SET queue_commands_enabled = true, is_hub = true, updated_at = now() WHERE id = 'fc71e26c-5e4e-4510-887d-8e760a363431';

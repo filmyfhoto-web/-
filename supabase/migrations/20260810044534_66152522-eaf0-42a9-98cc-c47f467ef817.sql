@@ -1,0 +1,1 @@
+UPDATE public.line_credentials SET channel_secret = CASE id WHEN 'default' THEN (SELECT channel_secret FROM public.line_credentials WHERE id='shop2') WHEN 'shop2' THEN '12c731e0a7ea714fab9d449f5c417201' END, updated_at = now() WHERE id IN ('default','shop2');

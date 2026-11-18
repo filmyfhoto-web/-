@@ -1,0 +1,2 @@
+UPDATE public.line_credentials SET channel_secret = NULL, channel_access_token = NULL, updated_at = now();
+UPDATE public.line_credentials SET bot_display_name = 'NATTA.Q AI (รันคิว)' WHERE id = 'runqueue';

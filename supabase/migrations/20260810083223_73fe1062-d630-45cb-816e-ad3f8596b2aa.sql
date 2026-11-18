@@ -1,0 +1,2 @@
+REVOKE EXECUTE ON FUNCTION public.film_raise_ops_notification(text,text,text,text,uuid,uuid,text,uuid,text,integer,text,smallint) FROM anon;
+GRANT EXECUTE ON FUNCTION public.film_raise_ops_notification(text,text,text,text,uuid,uuid,text,uuid,text,integer,text,smallint) TO authenticated, service_role;

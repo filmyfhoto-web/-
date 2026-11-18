@@ -1,0 +1,105 @@
+/*
+ * FILM SHOP scoped design tokens.
+ * Applied only inside <div class="film-shop-scope">.
+ * Uses the shared NATTA GROUP professional palette.
+ */
+.film-shop-scope {
+  --navy: 209 61% 16%;
+  --cream: 45 29% 97%;
+  --blue: 210 53% 51%;
+  --beige: 34 50% 81%;
+  --gold: 34 50% 81%;
+  --gold-foreground: 209 61% 16%;
+  --background: var(--cream);
+  --foreground: var(--navy);
+  --card: 0 0% 100%;
+  --card-foreground: var(--navy);
+  --popover: 0 0% 100%;
+  --popover-foreground: var(--navy);
+  --primary: var(--navy);
+  --primary-foreground: 0 0% 100%;
+  --secondary: 204 42% 95%;
+  --secondary-foreground: var(--navy);
+  --muted: 204 42% 95%;
+  --muted-foreground: 209 18% 42%;
+  --accent: var(--beige);
+  --accent-foreground: var(--navy);
+  --success: 152 58% 33%;
+  --success-foreground: 0 0% 100%;
+  --warning: 35 90% 50%;
+  --warning-foreground: 0 0% 100%;
+  --destructive: 0 78% 52%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 205 30% 87%;
+  --input: 205 30% 87%;
+  --ring: var(--blue);
+  --radius: 10px;
+  --sidebar-background: var(--navy);
+  --sidebar-foreground: 0 0% 100%;
+  --sidebar-primary: var(--blue);
+  --sidebar-primary-foreground: 0 0% 100%;
+  --sidebar-accent: 209 45% 26%;
+  --sidebar-accent-foreground: 0 0% 100%;
+  --sidebar-border: 209 45% 26%;
+  --sidebar-ring: var(--blue);
+  --header-background: 0 0% 100%;
+  --header-foreground: var(--navy);
+  --table-header: 204 42% 95%;
+  --table-row-alt: 45 29% 97%;
+  --price-highlight: var(--gold);
+  --price-highlight-foreground: var(--navy);
+  background-color: hsl(var(--background));
+  color: hsl(var(--foreground));
+  font-family: "Sarabun", "Noto Sans Thai", system-ui, sans-serif;
+}
+
+.dark .film-shop-scope {
+  --background: 209 45% 10%;
+  --foreground: 45 29% 97%;
+  --card: 209 45% 14%;
+  --card-foreground: 45 29% 97%;
+  --popover: 209 45% 14%;
+  --popover-foreground: 45 29% 97%;
+  --secondary: 209 45% 20%;
+  --secondary-foreground: 45 29% 97%;
+  --muted: 209 45% 20%;
+  --muted-foreground: 205 30% 75%;
+  --accent: 34 35% 28%;
+  --accent-foreground: 45 29% 97%;
+  --border: 209 35% 28%;
+  --input: 209 35% 28%;
+  --sidebar-background: 209 61% 12%;
+  --sidebar-accent: 209 45% 22%;
+  --sidebar-border: 209 45% 26%;
+}
+
+.film-shop-scope .scrollbar-thin { scrollbar-width: thin; }
+.film-shop-scope .scrollbar-thin::-webkit-scrollbar { width: 6px; height: 6px; }
+.film-shop-scope .scrollbar-thin::-webkit-scrollbar-track { background: hsl(var(--muted)); }
+.film-shop-scope .scrollbar-thin::-webkit-scrollbar-thumb { background: hsl(var(--muted-foreground) / 0.3); border-radius: 3px; }
+.film-shop-scope .scrollbar-thin::-webkit-scrollbar-thumb:hover { background: hsl(var(--muted-foreground) / 0.5); }
+.film-shop-scope .safe-area-bottom { padding-bottom: env(safe-area-inset-bottom, 0px); }
+.film-shop-scope .safe-area-top { padding-top: env(safe-area-inset-top, 0px); }
+.film-shop-scope .touch-target { min-height: 2.75rem; min-width: 2.75rem; }
+@media (max-width: 767px) {
+  .film-shop-scope input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),
+  .film-shop-scope select,
+  .film-shop-scope textarea {
+    font-size: 16px !important;
+    min-height: 2.5rem;
+  }
+}
+@media print {
+  @page { size: 80mm auto; margin: 0; }
+  html, body {
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 80mm !important;
+    background: white !important;
+    color: black !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  body > *:not(#print-root):not(#rds-direct-print-host) { display: none !important; }
+  #print-root { display: block !important; width: 80mm !important; }
+}
